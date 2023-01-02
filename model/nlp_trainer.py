@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 from words2numbers import Words2Numbers, W2NFileManager
 from logistic_regression import BinaryLogisticRegression, BLRDatasetReader
@@ -62,72 +63,115 @@ class TrainingResult:
         return self.error >= other.error
 
 
-def main():
-    """Main core of the program."""
-    # Load the file contents.
-    mapper = W2NFileManager.load_feature_dictionary(datasets["word2vec"])
-    train_dataset = W2NFileManager.load_tsv_dataset(datasets["train"])
-    test_dataset = W2NFileManager.load_tsv_dataset(datasets["test"])
-    val_dataset = W2NFileManager.load_tsv_dataset(datasets["validation"])
+class NLPTrainerProgram:
+    """Main program to train the model."""
 
-    # Map the words into numbers.
-    preperor = Words2Numbers(mapper)
-    train_dataset_mapped = preperor.map(train_dataset)
-    test_dataset_mapped = preperor.map(test_dataset)
-    validation_dataset_mapped = preperor.map(val_dataset)
+    @staticmethod
+    def main():
+        """Main core of the program."""
+        # Parse the arguments.
+        args = NLPTrainerProgram.argument_parser()
+        # Load the file contents.
+        mapper = W2NFileManager.load_feature_dictionary(args.mapper[0])
+        train_dataset = W2NFileManager.load_tsv_dataset(args.train[0])
+        test_dataset = W2NFileManager.load_tsv_dataset(args.test[0])
+        val_dataset = W2NFileManager.load_tsv_dataset(args.validation[0])
 
-    # Read the datasets prepared with feature.py script.
-    train_dataset = BLRDatasetReader(dataset_list=train_dataset_mapped)
-    test_dataset = BLRDatasetReader(dataset_list=test_dataset_mapped)
-    validation_dataset = BLRDatasetReader(dataset_list=validation_dataset_mapped)
+        # Map the words into numbers.
+        preperor = Words2Numbers(mapper)
+        train_dataset_mapped = preperor.map(train_dataset)
+        test_dataset_mapped = preperor.map(test_dataset)
+        validation_dataset_mapped = preperor.map(val_dataset)
 
-    # Hyperparameters to test.
-    num_epochs = [10, 50, 100, 200, 300, 400, 500, 1000, 1500, 2000]
-    learning_rates = [0.0001, 0.001, 0.01, 0.1, 1.0]
+        # Read the datasets prepared with feature.py script.
+        train_dataset = BLRDatasetReader(dataset_list=train_dataset_mapped)
+        test_dataset = BLRDatasetReader(dataset_list=test_dataset_mapped)
+        validation_dataset = BLRDatasetReader(dataset_list=validation_dataset_mapped)
 
-    # Train the model for different hyperparameters.
-    results = []
-    for num_epoch in num_epochs:
-        for learning_rate in learning_rates:
-            # Train the model.
-            blg = BinaryLogisticRegression()
-            blg.train(
-                train_dataset.features,
-                train_dataset.labels,
-                num_epoch=num_epoch,
-                learning_rate=learning_rate,
-            )
+        # Hyperparameters to test.
+        num_epochs = [10, 50, 100, 200, 300, 400, 500, 1000, 1500, 2000]
+        learning_rates = [0.0001, 0.001, 0.01, 0.1, 1.0]
 
-            # Predict the labels for the validation set.
-            validation_predictions = blg.predict(validation_dataset.features)
-            validation_error = blg.compute_mse(
-                validation_predictions, validation_dataset.labels
-            )
+        # Train the model for different hyperparameters.
+        results = []
+        for num_epoch in num_epochs:
+            for learning_rate in learning_rates:
+                # Train the model.
+                blg = BinaryLogisticRegression()
+                blg.train(
+                    train_dataset.features,
+                    train_dataset.labels,
+                    num_epoch=num_epoch,
+                    learning_rate=learning_rate,
+                )
 
-            result = TrainingResult(
-                blg.get_weights(),
-                num_epoch,
-                learning_rate,
-                validation_error,
-            )
-            # Save the results.
-            results.append(result)
+                # Predict the labels for the validation set.
+                validation_predictions = blg.predict(validation_dataset.features)
+                validation_error = blg.compute_mse(
+                    validation_predictions, validation_dataset.labels
+                )
 
-    # Find the best hyperparameters.
-    best_result = min(results)
-    print(f"\nBest Hyperparameter Result:\n\
-            - Learning Rate: {best_result.learning_rate}\n\
-            - Epochs: {best_result.epoch_num}\n\
-            - Validation Error: {best_result.error: 0.6f}"
-    )
+                result = TrainingResult(
+                    blg.get_weights(),
+                    num_epoch,
+                    learning_rate,
+                    validation_error,
+                )
+                # Save the results.
+                results.append(result)
 
-    # Test the model with the best hyperparameters.
-    blg = BinaryLogisticRegression()
-    blg.set_weights(best_result.weights)
-    test_predictions = blg.predict(test_dataset.features)
-    test_error = blg.compute_mse(test_predictions, test_dataset.labels)
-    print(f"\nTest Error: {test_error: 0.6f}")
+        # Find the best hyperparameters.
+        best_result = min(results)
+        print(
+            f"\nBest Hyperparameter Result:\n\
+                - Learning Rate: {best_result.learning_rate}\n\
+                - Epochs: {best_result.epoch_num}\n\
+                - Validation Error: {best_result.error: 0.6f}"
+        )
+
+        # Test the model with the best hyperparameters.
+        blg = BinaryLogisticRegression()
+        blg.set_weights(best_result.weights)
+        test_predictions = blg.predict(test_dataset.features)
+        test_error = blg.compute_mse(test_predictions, test_dataset.labels)
+        print(f"\nTest Error: {test_error: 0.6f}")
+
+    @staticmethod
+    def argument_parser():
+        """Argument parser for the program."""
+        desc = "This script finds you the best hyperparameters \
+               and model weights for the NLP binary logistic regression model."
+        parser = argparse.ArgumentParser(description=desc)
+        parser.add_argument(
+            "-m",
+            "--mapper",
+            nargs="+",
+            required=True,
+            help="Provide the mapper (words to vector) file location.",
+        )
+        parser.add_argument(
+            "-t",
+            "--train",
+            nargs="+",
+            required=True,
+            help="Provide the train dataset file location as TSV.",
+        )
+        parser.add_argument(
+            "-s",
+            "--test",
+            nargs="+",
+            required=True,
+            help="Provide the test dataset file location as TSV.",
+        )
+        parser.add_argument(
+            "-v",
+            "--validation",
+            nargs="+",
+            required=True,
+            help="Provide the validation dataset file location as TSV.",
+        )
+        return parser.parse_args()
 
 
 if __name__ == "__main__":
-    main()
+    NLPTrainerProgram.main()
