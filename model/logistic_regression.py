@@ -74,6 +74,22 @@ class BLRFileManager:
             newline="\n",
         )
 
+    @staticmethod
+    def load_weights(file_to_read: str) -> np.ndarray:
+        """It loads the weights from a file.
+
+        Parameters
+        ----------
+        file_to_read : str
+            The file location to read weights.
+
+        Returns
+        -------
+        np.ndarray
+            The weights of the model.
+        """
+        return np.loadtxt(file_to_read)
+
 
 class BLRDatasetReader:
     """

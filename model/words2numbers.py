@@ -96,6 +96,21 @@ class Words2Numbers:
         """
         self.word_to_num_mapper: dict = word_mapper
 
+    def convert(self, review: str) -> np.ndarray:
+        """Converts the review into a fixed-length array of numbers.
+
+        Parameters
+        ----------
+        review : str
+            A review as a string.
+
+        Returns
+        -------
+        np.ndarray
+            A fixed-length array of numbers.
+        """
+        return self.map(np.array([review]))
+
     def map(self, dataset: np.ndarray) -> list:
         """Converts the dataset with words into dataset with numbers.
 
@@ -127,11 +142,18 @@ class Words2Numbers:
             A list of reviews with their mapped numbers.
         """
         dataset_with_numbers = []
-        for label, review in clean_dataset:
-            weights_combined = np.zeros(self.VECTOR_LEN)
-            for word in review.split():
-                weights_combined += self.word_to_num_mapper[word]
-            dataset_with_numbers.append((label, weights_combined / len(review.split())))
+        if len(clean_dataset[0]) == 2:
+            for label, review in clean_dataset:
+                weights_combined = np.zeros(self.VECTOR_LEN)
+                for word in review.split():
+                    weights_combined += self.word_to_num_mapper[word]
+                dataset_with_numbers.append((label, weights_combined / len(review.split())))
+        else:
+            for review in clean_dataset:
+                weights_combined = np.zeros(self.VECTOR_LEN)
+                for word in review.split():
+                    weights_combined += self.word_to_num_mapper[word]
+                dataset_with_numbers.append(weights_combined / len(review.split()))
         return dataset_with_numbers
 
     def clean_non_mapped_words(self, dataset: np.ndarray) -> list:
@@ -148,12 +170,20 @@ class Words2Numbers:
             A list of words or sentences which can be mapped.
         """
         cleaned_dataset = []
-        for label, review in dataset:
-            cleaned_review = []
-            for word in review.split():
-                if word in self.word_to_num_mapper:
-                    cleaned_review.append(word)
-            cleaned_dataset.append((label, " ".join(cleaned_review)))
+        if len(dataset.shape) == 2:
+            for label, review in dataset:
+                cleaned_review = []
+                for word in review.split():
+                    if word in self.word_to_num_mapper:
+                        cleaned_review.append(word)
+                cleaned_dataset.append((label, " ".join(cleaned_review)))
+        else:
+            for review in dataset:
+                cleaned_review = []
+                for word in review.split():
+                    if word in self.word_to_num_mapper:
+                        cleaned_review.append(word)
+                cleaned_dataset.append(" ".join(cleaned_review))
         return cleaned_dataset
 
 
