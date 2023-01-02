@@ -166,6 +166,17 @@ class BinaryLogisticRegression:
         self._is_trained = True
         return (self.compute_error(predictions, label_vector), predictions)
 
+    def get_weights(self) -> np.ndarray:
+        """Returns weights of the model.
+
+        Returns
+        -------
+        np.ndarray
+            Returns weights of the model.
+        """
+        if self._weights is not None and self._is_trained:
+            return self._weights
+
     def predict(
         self,
         input_matrix: np.ndarray,
