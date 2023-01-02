@@ -1,0 +1,3 @@
+In this predictions, following parameters used:
+- Epoch: 500
+- Learning Rate: 0.01
