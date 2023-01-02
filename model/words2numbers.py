@@ -216,18 +216,18 @@ class Words2NumbersProgram:
             raise SystemExit("[ERROR] Invalid number of arguments.")
 
         return {
-            "word2vec_file": args[6],
+            "word2vec_file": args[0],
             "train": {
-                "input_file": args[0],
-                "output_file": args[3],
-            },
-            "test": {
                 "input_file": args[1],
                 "output_file": args[4],
             },
-            "validation": {
+            "test": {
                 "input_file": args[2],
                 "output_file": args[5],
+            },
+            "validation": {
+                "input_file": args[3],
+                "output_file": args[6],
             },
         }
 
