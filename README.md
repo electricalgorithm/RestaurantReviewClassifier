@@ -4,7 +4,6 @@
 
 This program provides you a trained logistic regression model to classify restaurant's English reviews if they are positive or negative.
 
-<br>
 ```bash
 ~$ python3 classifer.py -r "Put here the review you want to classify."
 ```
