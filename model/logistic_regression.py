@@ -62,8 +62,11 @@ class BLRDatasetReader:
     This class is a reader for the number-based dataset files.
     """
 
-    def __init__(self, dataset_location) -> None:
-        self.file = np.loadtxt(dataset_location, delimiter="\t")
+    def __init__(self, dataset_location: str = None, dataset_list: list = None) -> None:
+        if dataset_location is not None:
+            self.file = np.loadtxt(dataset_location, delimiter="\t")
+        else:
+            self.file = np.array(dataset_list)
 
     @property
     def all(self) -> np.ndarray:
