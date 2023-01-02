@@ -55,6 +55,24 @@ class BLRFileManager:
             fmt="%d",
             newline="\n",
         )
+    
+    @staticmethod
+    def save_weights(weights: np.ndarray, file_to_write: str) -> None:
+        """It saves the weights numpy.ndarray to a file.
+
+        Parameters
+        ----------
+        weights : np.ndarray
+            The weights of the model.
+        file_to_write : str
+            The file location tot write weights.
+        """
+        np.savetxt(
+            fname=file_to_write,
+            X=weights,
+            fmt="%f",
+            newline="\n",
+        )
 
 
 class BLRDatasetReader:
@@ -326,6 +344,7 @@ class BLGTrainerProgram:
             "validation": validation_error,
         }
         BLRFileManager.save_errors(errors, settings["model_options"]["metrics_output"])
+        BLRFileManager.save_weights(blg.get_weights(), settings["model_options"]["weights_output"])
 
         # Write the predictions to the output file.
         BLRFileManager.save_predictions(
@@ -353,7 +372,7 @@ class BLGTrainerProgram:
             Raises error if invalid number of arguments given.
         """
         args = sys.argv[1:]
-        if len(args) != 9:
+        if len(args) != 10:
             raise SystemExit("[ERROR] Invalid number of arguments.")
 
         return {
@@ -361,6 +380,7 @@ class BLGTrainerProgram:
                 "metrics_output": args[6],
                 "num_epoch": args[7],
                 "learning_rate": args[8],
+                "weights_output": args[9]
             },
             "train": {
                 "input_file": args[0],
