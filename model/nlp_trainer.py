@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 from words2numbers import Words2Numbers, W2NFileManager
-from logistic_regression import BinaryLogisticRegression, BLRDatasetReader
+from logistic_regression import BinaryLogisticRegression, BLRDatasetReader, BLRFileManager
 
 class TrainingResult:
     """Represents the result of the training process."""
@@ -128,6 +128,9 @@ class NLPTrainerProgram:
         test_error = blg.compute_mse(test_predictions, test_dataset.labels)
         print(f"\nTest Error: {test_error: 0.6f}")
 
+        # Save the model weights.
+        BLRFileManager.save_weights(best_result.weights, args.output[0])
+
     @staticmethod
     def argument_parser():
         """Argument parser for the program."""
@@ -161,6 +164,13 @@ class NLPTrainerProgram:
             nargs="+",
             required=True,
             help="Provide the validation dataset file location as TSV.",
+        )
+        parser.add_argument(
+            "-o",
+            "--output",
+            nargs="+",
+            required=True,
+            help="Provide the file location to save the model weights.",
         )
         return parser.parse_args()
 
