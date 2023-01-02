@@ -55,7 +55,7 @@ class BLRFileManager:
             fmt="%d",
             newline="\n",
         )
-    
+
     @staticmethod
     def save_weights(weights: np.ndarray, file_to_write: str) -> None:
         """It saves the weights numpy.ndarray to a file.
@@ -84,7 +84,29 @@ class BLRDatasetReader:
         if dataset_location is not None:
             self.file = np.loadtxt(dataset_location, delimiter="\t")
         else:
-            self.file = np.array(dataset_list)
+            self.file = self.read_dataset_list(dataset_list)
+
+    @staticmethod
+    def read_dataset_list(dataset_instance: list) -> np.ndarray:
+        """Reads the dataset from a list.
+
+        Parameters
+        ----------
+        dataset_instance : list
+            A list of dataset.
+
+        Returns
+        -------
+        np.ndarray
+            A numpy.ndarray instance of dataset.
+        """
+        np_dataset = np.zeros(
+            (len(dataset_instance), len(dataset_instance[1][1]) + 1), dtype=np.float128
+        )
+        for index, data in enumerate(dataset_instance):
+            np_dataset[index, 0] = int(data[0])
+            np_dataset[index, 1:] = np.array(data[1])
+        return np_dataset
 
     @property
     def all(self) -> np.ndarray:
@@ -182,7 +204,18 @@ class BinaryLogisticRegression:
             self._weights = self._weights - learning_rate * gradient
 
         self._is_trained = True
-        return (self.compute_error(predictions, label_vector), predictions)
+        return (self.compute_mse(predictions, label_vector), predictions)
+
+    def set_weights(self, weights) -> None:
+        """Sets the weights of the model.
+
+        Parameters
+        ----------
+        weights : np.ndarray
+            The weights of the model.
+        """
+        self._weights = weights
+        self._is_trained = True
 
     def get_weights(self) -> np.ndarray:
         """Returns weights of the model.
@@ -263,8 +296,26 @@ class BinaryLogisticRegression:
         return -0.1
 
     @staticmethod
-    def compute_error(predicted_labels: np.ndarray, real_labels: np.ndarray) -> float:
-        """Computes the error between the predicted and the actual labels.
+    def compute_mse(predicted_labels: np.ndarray, real_labels: np.ndarray) -> float:
+        """Computes the mean squared error between the predicted and the actual labels.
+
+        Parameters
+        ----------
+        predicted_labels : np.ndarray
+            Predicted labels with trained model.
+        real_labels : np.ndarray
+            Real labels from dataset.
+
+        Returns
+        -------
+        float
+            Mean squared error of model.
+        """
+        return np.mean((predicted_labels - real_labels) ** 2)
+
+    @staticmethod
+    def compute_mabs(predicted_labels: np.ndarray, real_labels: np.ndarray) -> float:
+        """Computes the mean absolute error between the predicted and the actual labels.
 
         Parameters
         ----------
@@ -329,11 +380,11 @@ class BLGTrainerProgram:
 
         # Predict the labels for the test set.
         test_predictions = blg.predict(test_dataset.features)
-        test_error = blg.compute_error(test_predictions, test_dataset.labels)
+        test_error = blg.compute_mse(test_predictions, test_dataset.labels)
 
         # Predict the labels for the validation set.
         validation_predictions = blg.predict(validation_dataset.features)
-        validation_error = blg.compute_error(
+        validation_error = blg.compute_mse(
             validation_predictions, validation_dataset.labels
         )
 
@@ -344,7 +395,9 @@ class BLGTrainerProgram:
             "validation": validation_error,
         }
         BLRFileManager.save_errors(errors, settings["model_options"]["metrics_output"])
-        BLRFileManager.save_weights(blg.get_weights(), settings["model_options"]["weights_output"])
+        BLRFileManager.save_weights(
+            blg.get_weights(), settings["model_options"]["weights_output"]
+        )
 
         # Write the predictions to the output file.
         BLRFileManager.save_predictions(
@@ -380,7 +433,7 @@ class BLGTrainerProgram:
                 "metrics_output": args[6],
                 "num_epoch": args[7],
                 "learning_rate": args[8],
-                "weights_output": args[9]
+                "weights_output": args[9],
             },
             "train": {
                 "input_file": args[0],
