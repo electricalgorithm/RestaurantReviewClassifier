@@ -2,9 +2,9 @@
   <img src="docs/banner-x2.png">
 </p>
 
-# Restaurant Review Classifier
-It is a trained logistic regression model to classify restaurant's English reviews if they are positive or negative.
+This program provides you a trained logistic regression model to classify restaurant's English reviews if they are positive or negative.
 
+<br>
 ```bash
 ~$ python3 classifer.py -r "Put here the review you want to classify."
 ```
