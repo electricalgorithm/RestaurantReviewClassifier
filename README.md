@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/banner.png">
+  <img src="docs/banner-x2.png">
 </p>
 
 # Restaurant Review Classifier
