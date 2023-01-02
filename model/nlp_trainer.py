@@ -3,14 +3,6 @@ import numpy as np
 from words2numbers import Words2Numbers, W2NFileManager
 from logistic_regression import BinaryLogisticRegression, BLRDatasetReader
 
-datasets = {
-    "train": "dataset/train_data.tsv",
-    "test": "dataset/test_data.tsv",
-    "validation": "dataset/validation_data.tsv",
-    "word2vec": "dataset/word2vec.txt",
-}
-
-
 class TrainingResult:
     """Represents the result of the training process."""
 
